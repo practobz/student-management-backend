@@ -8,22 +8,31 @@ const Student = require("./model/Student");
 const app = express();
 
 
-// Middleware
-app.use(express.json());
+// ==========================
+// MIDDLEWARE
+// ==========================
+
 app.use(cors());
+app.use(express.json());
 
 
-// MongoDB Connection
+// ==========================
+// MONGODB CONNECTION
+// ==========================
+
 mongoose.connect(process.env.MONGO_URI)
     .then(() => {
         console.log("MongoDB connected successfully");
     })
     .catch((error) => {
-        console.log("MongoDB connection failed:", error);
+        console.error("MongoDB connection failed:", error);
     });
 
 
+// ==========================
 // CREATE STUDENT
+// ==========================
+
 app.post("/students", async (req, res) => {
 
     try {
@@ -36,6 +45,8 @@ app.post("/students", async (req, res) => {
 
     } catch (error) {
 
+        console.error(error);
+
         res.status(500).json({
             message: "Error adding student",
             error: error.message
@@ -46,7 +57,10 @@ app.post("/students", async (req, res) => {
 });
 
 
+// ==========================
 // GET ALL STUDENTS
+// ==========================
+
 app.get("/students", async (req, res) => {
 
     try {
@@ -56,6 +70,8 @@ app.get("/students", async (req, res) => {
         res.json(students);
 
     } catch (error) {
+
+        console.error(error);
 
         res.status(500).json({
             message: "Error fetching students",
@@ -67,7 +83,10 @@ app.get("/students", async (req, res) => {
 });
 
 
+// ==========================
 // GET ONE STUDENT
+// ==========================
+
 app.get("/students/:id", async (req, res) => {
 
     try {
@@ -75,11 +94,9 @@ app.get("/students/:id", async (req, res) => {
         const student = await Student.findById(req.params.id);
 
         if (!student) {
-
             return res.status(404).json({
                 message: "Student not found"
             });
-
         }
 
         res.json(student);
@@ -96,7 +113,10 @@ app.get("/students/:id", async (req, res) => {
 });
 
 
+// ==========================
 // UPDATE STUDENT
+// ==========================
+
 app.put("/students/:id", async (req, res) => {
 
     try {
@@ -104,15 +124,16 @@ app.put("/students/:id", async (req, res) => {
         const student = await Student.findByIdAndUpdate(
             req.params.id,
             req.body,
-            { new: true }
+            {
+                new: true,
+                runValidators: true
+            }
         );
 
         if (!student) {
-
             return res.status(404).json({
                 message: "Student not found"
             });
-
         }
 
         res.json(student);
@@ -129,7 +150,10 @@ app.put("/students/:id", async (req, res) => {
 });
 
 
+// ==========================
 // DELETE STUDENT
+// ==========================
+
 app.delete("/students/:id", async (req, res) => {
 
     try {
@@ -137,11 +161,9 @@ app.delete("/students/:id", async (req, res) => {
         const student = await Student.findByIdAndDelete(req.params.id);
 
         if (!student) {
-
             return res.status(404).json({
                 message: "Student not found"
             });
-
         }
 
         res.json({
@@ -160,7 +182,10 @@ app.delete("/students/:id", async (req, res) => {
 });
 
 
-// HOME ROUTE
+// ==========================
+// HOME
+// ==========================
+
 app.get("/", (req, res) => {
 
     res.send("Student Management API is running");
@@ -168,9 +193,14 @@ app.get("/", (req, res) => {
 });
 
 
+// ==========================
 // START SERVER
-app.listen(5000, () => {
+// ==========================
 
-    console.log("Server running on port 5000");
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, "0.0.0.0", () => {
+
+    console.log(`Server running on port ${PORT}`);
 
 });
